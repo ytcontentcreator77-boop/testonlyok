@@ -6,18 +6,10 @@ import { Icon } from "../icons";
 
 import { updateMe } from "../me";
 import { meStore } from "../store";
-import { haptic, homeScreen, openLink, openTelegramLink, requestWriteAccess, webApp } from "../tg";
+import { haptic, homeScreen, openTelegramLink, requestWriteAccess, webApp } from "../tg";
 import { TermsSheet, openExternalTerms } from "./Terms";
 import { brandStore } from "../theme";
 import { BrandMark, LargeTitle, List, Row, Screen, Section, Sheet, errText, toast } from "../ui";
-
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-}
 
 /** First letter of each name, uppercased for the UI language (whole characters, so emoji and surrogates survive). */
 function initials(first: string, last: string): string {
@@ -131,63 +123,6 @@ export function Profile() {
         }
       />
 
-      {me.referralEnabled ? (
-        <List>
-          <Row icon="users" plate="var(--lime)" title={t("invite.title")} meta={`Earn ₹${Number(me.referralRewardInr).toFixed(2)} per referral`} href="/invite" />
-        </List>
-      ) : null}
-
-      <List>
-        <Row icon="wallet" plate="var(--lime)" title="Wallet balance" value={`₹${Number(me.balanceInr).toFixed(2)}`} href="/key-wallet" />
-      </List>
-
-      {me.channelUrl || brand.websiteUrl ? (
-      <div class={"link-tiles" + (me.channelUrl && brand.websiteUrl ? "" : " one")}>
-        {me.channelUrl ? (
-          <button
-            type="button"
-            class="link-tile press"
-            aria-label={`${t("profile.channel")}, ${t("profile.channelSub")}`}
-            onClick={() => {
-              haptic.tap();
-              openTelegramLink(me.channelUrl!);
-            }}
-          >
-            <span class="tile md brand">
-              <Icon name="plane" size={22} stroke={1.8} />
-            </span>
-            <Icon class="lt-out" name="out" size={16} stroke={2} />
-            <span class="lt-text">
-              <span class="lt-title">{t("profile.channel")}</span>
-              <span class="lt-hint">{t("profile.channelSub")}</span>
-            </span>
-          </button>
-        ) : null}
-        {brand.websiteUrl ? (
-          <button
-            type="button"
-            class="link-tile press"
-            aria-label={`${t("profile.website")}, ${hostOf(brand.websiteUrl)}`}
-            onClick={() => {
-              haptic.tap();
-              openLink(brand.websiteUrl!);
-            }}
-          >
-            <span class="tile md brand">
-              <Icon name="globe" size={22} stroke={1.8} />
-            </span>
-            <Icon class="lt-out" name="out" size={16} stroke={2} />
-            <span class="lt-text">
-              <span class="lt-title">{t("profile.website")}</span>
-              <span class="lt-hint" dir="ltr">
-                {hostOf(brand.websiteUrl)}
-              </span>
-            </span>
-          </button>
-        ) : null}
-      </div>
-      ) : null}
-
       <List>
         <Row
           icon="globe"
@@ -216,8 +151,6 @@ export function Profile() {
           />
         ) : null}
         <Row icon="chat" plate="var(--sky)" title={t("profile.support")} onClick={support} external />
-        <Row icon="doc" plate="var(--sky)" title="How to use this bot" href="/how-to-use" />
-        <Row icon="bot" plate="var(--lavender-strong)" title="Contact Developer" meta="@devheroo" href="/developer" />
         <Row icon="doc" plate="var(--lavender)" title={t("profile.terms")} onClick={() => (openExternalTerms() ? undefined : setSheet("terms"))} external={!!brand.termsUrl} />
       </List>
 
