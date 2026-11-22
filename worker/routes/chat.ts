@@ -42,8 +42,17 @@ chat.get("/conversations/:id/messages",async c=>{
  const me=c.get("user").id,id=Number(c.req.param("id"));
  const member=await c.env.DB.prepare("SELECT 1 FROM chat_members WHERE conversation_id=?1 AND user_id=?2").bind(id,me).first();
  if(!member)return bad(c,404,"CHAT_NOT_FOUND");
- const r=await c.env.DB.prepare("SELECT id,sender_id,body,created_at,edited_at,read_at,delivered_at FROM chat_messages WHERE conversation_id=?1 AND deleted_at IS NULL AND NOT EXISTS(SELECT 1 FROM chat_message_hidden h WHERE h.message_id=chat_messages.id AND h.user_id=?2) ORDER BY id DESC LIMIT 100").bind(id,me).all();
- await c.env.DB.prepare("UPDATE chat_messages SET delivered_at=COALESCE(delivered_at,?1),read_at=COALESCE(read_at,?1) WHERE conversation_id=?2 AND sender_id<>?3").bind(now(),id,me).run();
+ const member=await c.env.DB.prepare("SELECT 1 FROM chat_members WHERE conversation_id=?1 AND user_id=?2").bind(id,me).first();
+ if(!member)return bad(c,404,"CHAT_NOT_FOUND");
+ const readAt=now();
+ // Opening/polling a conversation acknowledges incoming messages; update before selecting so
+ // the sender sees the current delivered/read ticks in this same response.
+ await c.env.DB.batch([
+  c.env.DB.prepare("UPDATE chat_messages SET delivered_at=COALESCE(delivered_at,?1) WHERE conversation_id=?2 AND sender_id<>?3").bind(readAt,id,me),
+  c.env.DB.prepare("UPDATE chat_messages SET read_at=COALESCE(read_at,?1) WHERE conversation_id=?2 AND sender_id<>?3").bind(readAt,id,me),
+  c.env.DB.prepare("UPDATE chat_members SET last_read_at=?3 WHERE conversation_id=?1 AND user_id=?2").bind(id,me,readAt)
+ ]);
+ const r=await c.env.DB.prepare("SELECT id,sender_id,body,created_at,edited_at,read_at,delivered_at,forwarded_from_id FROM chat_messages WHERE conversation_id=?1 AND deleted_at IS NULL AND NOT EXISTS(SELECT 1 FROM chat_message_hidden h WHERE h.message_id=chat_messages.id AND h.user_id=?2) ORDER BY id DESC LIMIT 100").bind(id,me).all();
  return c.json({messages:r.results.reverse()});
 });
 chat.post("/conversations/:id/messages",async c=>{
