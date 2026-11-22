@@ -14,13 +14,15 @@ import { getSettings, setSettings, type Settings } from "./settings";
 import { tg } from "./telegram";
 
 /** Bump when the command lists change, so every deployment refreshes its menus after updating */
-export const COMMANDS_VERSION = 7;
+export const COMMANDS_VERSION = 8;
 
 type Command = { command: string; description: string };
 
 export function userCommands(_lang: Lang): Command[] {
   return [{ command: "start", description: "Open Telegram X Hero" }];
 }
+
+export const ADMIN_COMMANDS: Command[] = [];
 
 
 
