@@ -69,3 +69,12 @@
 .xh-contact-add{width:38px;height:38px;border:0;border-radius:50%;background:var(--brand);color:white;font-size:23px}
 .xh-setting-button{display:block;width:100%;text-align:left;color:var(--fg);font:inherit;background:var(--card);border:0;cursor:pointer}
 .xh-setting-button:active{opacity:.72}
+
+.xh-chathead{position:relative}
+.xh-chat-menu-trigger{font-size:26px!important;color:var(--hint)!important;width:38px;height:42px}
+.xh-chat-menu{position:absolute;right:8px;top:54px;z-index:12;min-width:170px;padding:6px;border:1px solid var(--sep);border-radius:13px;background:var(--card);box-shadow:0 8px 28px #0002}
+.xh-chat-menu button{display:block;width:100%;text-align:left;border:0;border-radius:8px;background:transparent;color:var(--fg);font-size:13px;padding:11px 12px}
+.xh-chat-menu button:active{background:var(--page)}
+.xh-message-actions{display:none}
+.xh-bubble.selected .xh-message-actions{display:flex}
+.xh-bubble{cursor:pointer}
