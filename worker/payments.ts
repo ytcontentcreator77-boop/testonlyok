@@ -77,6 +77,13 @@ async function paymentFromPayload(env: Env, payload: string): Promise<PaymentRow
 
 /** Telegram asks us to confirm within 10 seconds. */
 export async function onPreCheckout(env: Env, q: { id: string; from: { id: number }; currency: string; total_amount: number; invoice_payload: string }) {
+  const premiumMatch = /^xh(\d+)$/.exec(q.invoice_payload);
+  if (premiumMatch) {
+    const premium = await env.DB.prepare("SELECT id,user_id,stars,status,created_at FROM premium_invoices WHERE id=?1").bind(Number(premiumMatch[1])).first<any>();
+    const valid = !!premium && premium.status === "pending" && premium.user_id === q.from.id && q.currency === "XTR" && q.total_amount === premium.stars && Math.floor(Date.now()/1000)-premium.created_at < 3600;
+    await tg(env.BOT_TOKEN,"answerPreCheckoutQuery",{pre_checkout_query_id:q.id,ok:valid,...(!valid?{error_message:"This premium invoice expired. Please create a new one."}:{})});
+    return;
+  }
   const p = await paymentFromPayload(env, q.invoice_payload);
   const now = Math.floor(Date.now() / 1000);
   const valid =
@@ -99,6 +106,22 @@ export async function onSuccessfulPayment(
   from: { id: number; language_code?: string },
   sp: { invoice_payload: string; telegram_payment_charge_id: string; total_amount: number; currency: string },
 ): Promise<void> {
+  const premiumMatch = /^xh(\d+)$/.exec(sp.invoice_payload);
+  if (premiumMatch) {
+    const premium = await env.DB.prepare("SELECT * FROM premium_invoices WHERE id=?1").bind(Number(premiumMatch[1])).first<any>();
+    if (!premium || premium.status !== "pending" || premium.user_id !== from.id || sp.currency !== "XTR" || sp.total_amount !== premium.stars || Math.floor(Date.now()/1000)-premium.created_at >= 3600) {
+      console.error("invalid premium Stars payment",sp.telegram_payment_charge_id); return;
+    }
+    const ts=Math.floor(Date.now()/1000);
+    const [mark]=await env.DB.batch([
+      env.DB.prepare("UPDATE premium_invoices SET status='paid',charge_id=?2,paid_at=?3 WHERE id=?1 AND status='pending'").bind(premium.id,sp.telegram_payment_charge_id,ts),
+      env.DB.prepare("INSERT INTO premium_subscriptions(user_id,plan_id,starts_at,expires_at,source) SELECT ?1,?2,?3,?4,'telegram_stars' WHERE changes()=1").bind(premium.user_id,premium.plan_id,ts,ts+premium.duration_days*86400)
+    ]);
+    if(!mark.meta.changes)return;
+    await tg(env.BOT_TOKEN,"sendMessage",{chat_id:premium.user_id,text:"⭐ Telegram X Hero Premium activated successfully."}).catch(e=>console.warn("premium activation notice failed",e));
+    return;
+  }
+
   const p = await paymentFromPayload(env, sp.invoice_payload);
   if (!p) {
     console.error("payment without record", sp.telegram_payment_charge_id);
