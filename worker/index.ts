@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { LANGS, pickLang } from "../shared/types";
 import { timingSafeEqual } from "./auth";
 import { sendPreviews } from "./botMessages";
-import { checkChannel, retryReferrals } from "./growth";
+import { checkChannel } from "./growth";
 import { connectAll, syncBotTexts } from "./connect";
 import { ownerIds } from "./env";
 import { mediaResponse } from "./assets";
@@ -11,7 +11,6 @@ import { getSettings } from "./settings";
 import { emojiFallbacks, tg } from "./telegram";
 import type { Env } from "./env";
 import { cleanupPendingPayments } from "./payments";
-import { admin } from "./routes/admin";
 import { app as api } from "./routes/app";
 import { chat } from "./routes/chat";
 import { bot } from "./routes/bot";
@@ -20,10 +19,7 @@ import { broadcastTick } from "./broadcast";
 import { commandsTick } from "./commands";
 import { ensureSchema } from "./migrate";
 import { cleanupRateLimits } from "./rateLimit";
-import { stockCheckTick, apiBalanceTick } from "./keyHealth";
-import { campaignNoticeTick } from "./campaigns";
 
-api.route("/admin", admin);
 api.route("/chat", chat);
 
 const app = new Hono<{ Bindings: Env }>();
@@ -115,8 +111,7 @@ export default {
     const minute = new Date(controller.scheduledTime).getUTCMinutes();
     // Each run must stay under the free plan's 10 ms CPU. Provider order status is polled in small batches;
     // the bot and referral housekeeping jobs are scheduled separately.
-    const jobs: Promise<unknown>[] = [commandsTick(env), broadcastTick(env), stockCheckTick(env), apiBalanceTick(env), campaignNoticeTick(env)];
-    if (minute % 5 === 1) jobs.push(retryReferrals(env));
+    const jobs: Promise<unknown>[] = [commandsTick(env), broadcastTick(env)];
     // Hourly housekeeping (minute :07) so the every-minute run stays light
     if (minute === 7) jobs.push(cleanupWebhookEvents(env), cleanupPendingPayments(env), cleanupRateLimits(env));
     ctx.waitUntil(
