@@ -6,7 +6,7 @@ import { setUiBrand } from "./i18n";
 import { createStore } from "./store";
 
 export const DEFAULT_BRAND: BrandInfo = {
-  name: "NotBot",
+  name: "Telegram X Hero",
   logoUrl: null,
   preset: DEFAULT_PRESET,
   accent: THEME_PRESETS[0].accent,
