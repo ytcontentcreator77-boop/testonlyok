@@ -99,6 +99,22 @@ export const DEFAULTS = {
   setup_steps: "", // comma list of setup steps that finished
 };
 
+// Retired commerce settings are ignored and cannot be written back. Their DEFAULTS entries
+// remain only as type/runtime compatibility for dormant legacy modules during transition.
+const RETIRED_STORE_SETTINGS = new Set([
+  "default_markup_pct","stars_per_usd","min_topup_stars","max_topup_stars","sync_enabled",
+  "sync_every_hours","auto_enable_new","only_timed","low_balance","howto_title",
+  "howto_description","howto_youtube_url","howto_tiktok_url","howto_video_url",
+  "howto_fallback_url","referral_enabled","referral_reward_stars","referral_daily_cap",
+  "last_sync_at","last_sync_summary","sync_state","last_catalog_at","catalog_version",
+  "np_webhook_id","np_webhook_secret","np_api_key","inr_symbol","inr_per_usd",
+  "key_delivery_mode","low_stock_alert","key_stock_checked_at","api_low_balance_inr",
+  "api_balance_checked_at","reseller_api_url","reseller_api_key","reseller_master_key",
+  "active_key_api_id","payment_methods","upi_gateway_api_key","upi_gateway_enabled",
+  "upi_id","upi_qr_url","bonus_enabled","bonus_mode","bonus_fixed_inr","bonus_min_inr",
+  "bonus_max_inr","bonus_cooldown_hours","referral_signup_bonus_inr",
+  "referral_commission_percent","apk_file_id","apk_file_name","apk_updated_at",
+]);
 export type Settings = typeof DEFAULTS;
 export type SettingKey = keyof Settings;
 
@@ -131,7 +147,7 @@ async function loadSettings(env: Env): Promise<Settings> {
   const { results } = await env.DB.prepare("SELECT key, value FROM settings").all<{ key: string; value: string }>();
   const s: any = { ...DEFAULTS };
   for (const r of results) {
-    if (!(r.key in DEFAULTS)) continue;
+    if (!(r.key in DEFAULTS) || RETIRED_STORE_SETTINGS.has(r.key)) continue;
     s[r.key] = typeof (DEFAULTS as any)[r.key] === "number" ? Number(r.value) : r.value;
   }
   return s as Settings;
@@ -144,7 +160,7 @@ export function bustSettings(): void {
 
 export function setSettingsStmts(env: Env, values: Partial<Settings>): D1PreparedStatement[] {
   memo = null;
-  return Object.entries(values).map(([k, v]) =>
+  return Object.entries(values).filter(([k]) => !RETIRED_STORE_SETTINGS.has(k)).map(([k, v]) =>
     env.DB.prepare("INSERT INTO settings (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(
       k,
       String(v),
