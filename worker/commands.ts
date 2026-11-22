@@ -9,7 +9,6 @@ import { brandName } from "./brand";
 import { broadcastBusy } from "./broadcastCore";
 import { PROFILE_BATCHES, setProfileTexts, TelegramRetryLater } from "./connect";
 import { type Env, ownerIds } from "./env";
-import { botPlain } from "./i18n";
 import { getSettings, setSettings, type Settings } from "./settings";
 import { tg } from "./telegram";
 
