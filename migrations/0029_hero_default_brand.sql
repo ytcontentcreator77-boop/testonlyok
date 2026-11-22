@@ -1,0 +1,1 @@
+INSERT INTO settings(key,value) VALUES('brand_name','Telegram X Hero') ON CONFLICT(key) DO UPDATE SET value='Telegram X Hero' WHERE settings.value IN ('Amit Bot','NotBot','');
