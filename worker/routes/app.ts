@@ -24,6 +24,7 @@ export interface UserRow {
   channel_ok: number;
   channel_checked_at: number | null;
   home_at: number | null;
+  created_at: number;
 }
 
 type Vars = { tgUser: TgUser; user: UserRow; settings: Settings; lang: Lang; startParam: string | null };
