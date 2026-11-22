@@ -72,7 +72,23 @@ chat.get("/admin/users",async c=>{
  if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
  const q=(c.req.query("q")||"").trim().replace(/^@/,"").slice(0,64);
  if(q.length<2)return c.json({users:[]});
- const like="%"+q.replace(/[\\%_]/g,"\\chat.get("/admin/branding",async c=>{
+ const like="%"+q.replace(/[\\%_]/g,"\\$&")+"%";
+ const r=await c.env.DB.prepare("SELECT id,first_name,last_name,username,photo_url,banned,created_at FROM users WHERE CAST(id AS TEXT)=?1 OR first_name LIKE ?2 ESCAPE '\\' OR last_name LIKE ?2 ESCAPE '\\' OR (first_name||' '||COALESCE(last_name,'')) LIKE ?2 ESCAPE '\\' OR username LIKE ?2 ESCAPE '\\' ORDER BY created_at DESC LIMIT 30").bind(q,like).all();
+ return c.json({users:r.results});
+});
+chat.post("/admin/users/:id/ban",async c=>{
+ if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
+ const id=Number(c.req.param("id"));if(!Number.isSafeInteger(id)||id<1||id===c.get("user").id)return bad(c,400,"INVALID_USER");
+ const r=await c.env.DB.prepare("UPDATE users SET banned=1 WHERE id=?1").bind(id).run();
+ return r.meta.changes?c.json({ok:true}):bad(c,404,"USER_NOT_FOUND");
+});
+chat.post("/admin/users/:id/unban",async c=>{
+ if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
+ const id=Number(c.req.param("id"));if(!Number.isSafeInteger(id)||id<1)return bad(c,400,"INVALID_USER");
+ const r=await c.env.DB.prepare("UPDATE users SET banned=0 WHERE id=?1").bind(id).run();
+ return r.meta.changes?c.json({ok:true}):bad(c,404,"USER_NOT_FOUND");
+});
+chat.get("/admin/branding",async c=>{
  if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
  const r=await c.env.DB.prepare("SELECT brand_name,brand_description FROM chat_platform_settings WHERE id=1").first<any>();
  return c.json({brandName:r?.brand_name||"Telegram X Hero",brandDescription:r?.brand_description||"Private messaging"});
