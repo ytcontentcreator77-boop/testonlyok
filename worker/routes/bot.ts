@@ -193,7 +193,6 @@ async function handle(env: Env, u: any): Promise<void> {
       await tg(env.BOT_TOKEN,"sendMessage",{chat_id:from.id,text:"✅ Setup video saved for "+product.name+"."+(username?"\nLink: https://t.me/"+username+"?start=video"+productId:"\nSet the bot username to generate its deep link.")});
       return;
     }
-  }
     const bodyText=String(m.text??m.caption??"").trim();
     const uploadMatch=/^\/upload\s+(P[0-9A-Z_-]+)(?:\s+([\s\S]*))?$/i.exec(bodyText);
     const hasMedia=!!(m.document||m.photo?.length||m.video||m.animation||m.audio||m.voice||m.video_note||m.sticker);
