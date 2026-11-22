@@ -18,17 +18,11 @@ export const COMMANDS_VERSION = 7;
 
 type Command = { command: string; description: string };
 
-export function userCommands(lang: Lang): Command[] {
-  return [
-    { command: "start", description: botPlain(lang, "cmdStart") },
-    { command: "keys", description: "My purchased keys" },
-    { command: "wallet", description: botPlain(lang, "cmdWallet") },
-    { command: "bonus", description: "Claim wallet bonus" },
-    { command: "coupon", description: "Redeem wallet coupon" },
-    { command: "language", description: botPlain(lang, "cmdLanguage") },
-    { command: "help", description: botPlain(lang, "cmdHelp") },
-  ];
+export function userCommands(_lang: Lang): Command[] {
+  return [{ command: "start", description: "Open Telegram X Hero" }];
 }
+
+export const ADMIN_COMMANDS: Command[] = [];
 
 export const ADMIN_COMMANDS: Command[] = [
   { command: "admin", description: "Admin panel" },
