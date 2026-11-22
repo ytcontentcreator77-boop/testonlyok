@@ -3,3 +3,13 @@
 
 /* Telegram-synced profile photos */
 .xh-profilephoto{overflow:hidden;display:grid;place-items:center}.xh-profilephoto img,.xh-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}.xh-profile-sync{display:block;margin-top:8px;opacity:.7}
+
+/* Telegram-inspired chat list, archive folder and Telegram-synced peer avatars. */
+.xh-archive-toggle{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--card);color:var(--fg);padding:10px 13px;border-radius:12px;font:inherit;font-size:12px;font-weight:650}
+.xh-archive-toggle span{font-size:18px;color:var(--hint)}
+.xh-peerphoto{overflow:hidden;flex:none}
+.xh-peerphoto img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.xh-chatrow{min-height:72px;padding:11px 4px}
+.xh-chatrow:active,.xh-results button:active{background:var(--card)}
+.xh-chattext b{font-weight:650}
+.xh-search{position:sticky;top:66px;z-index:3}
