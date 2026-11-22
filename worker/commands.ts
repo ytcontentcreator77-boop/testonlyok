@@ -22,20 +22,7 @@ export function userCommands(_lang: Lang): Command[] {
   return [{ command: "start", description: "Open Telegram X Hero" }];
 }
 
-export const ADMIN_COMMANDS: Command[] = [];
 
-export const ADMIN_COMMANDS: Command[] = [
-  { command: "admin", description: "Admin panel" },
-  { command: "stats", description: "Sales and user statistics" },
-  { command: "addkey", description: "Import keys into product stock" },
-  { command: "upload", description: "Attach an APK or setup file to a product" },
-  { command: "addv", description: "Add a setup video to a platform" },
-  { command: "stock", description: "Check key stock levels" },
-  { command: "apicheck", description: "Check reseller API balance" },
-  { command: "bonus_settings", description: "Configure bonus claims" },
-  { command: "broadcast", description: "Broadcast a message to all users" },
-  { command: "preview", description: "Preview every bot message" },
-];
 
 /** Customer menus for one batch of 10 languages (10 Telegram calls). Returns the next batch, or null when done. */
 export async function setUserCommands(env: Env, batch: number): Promise<number | null> {
