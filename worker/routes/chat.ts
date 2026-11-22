@@ -4,7 +4,7 @@ import { isOwner } from "../env";
 import { tg } from "../telegram";
 export const chat = new Hono<AppEnv>();
 const now=()=>Math.floor(Date.now()/1000);
-chat.post("/presence",async c=>{await c.env.DB.prepare("UPDATE users SET last_seen_at=?1 WHERE id=?2").bind(now(),c.get("user").id).run();return c.json({ok:true})});
+chat.post("/presence",async c=>{if(!c.get("user").can_message)return bad(c,403,"BOT_START_REQUIRED");await c.env.DB.prepare("UPDATE users SET last_seen_at=?1 WHERE id=?2").bind(now(),c.get("user").id).run();return c.json({ok:true})});
 const bad=(c:any,s:number,code:string)=>c.json({error:code,code},s);
 chat.use("*",async(c,next)=>{if(!c.get("user").can_message)return bad(c,403,"BOT_START_REQUIRED");await next()});
 chat.get("/users",async c=>{
