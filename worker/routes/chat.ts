@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv } from "./app";
 import { isOwner } from "../env";
+import { tg } from "../telegram";
 export const chat = new Hono<AppEnv>();
 const now=()=>Math.floor(Date.now()/1000);
 const bad=(c:any,s:number,code:string)=>c.json({error:code,code},s);
@@ -56,6 +57,7 @@ chat.get("/premium",async c=>{
  const s=await c.env.DB.prepare("SELECT expires_at,source FROM premium_subscriptions WHERE user_id=?1 AND status='active' AND (expires_at IS NULL OR expires_at>?2) ORDER BY expires_at DESC LIMIT 1").bind(me,now()).first();
  return c.json({plans:p.results,subscription:s||null,support:c.get("settings").support_username||null});
 });
+chat.post("/premium/invoice",async c=>{const me=c.get("user").id,b=await c.req.json().catch(()=>({})),id=Number(b.planId);const p=await c.env.DB.prepare("SELECT id,name,stars,duration_days FROM premium_plans WHERE id=?1 AND active=1").bind(id).first<any>();if(!p)return bad(c,404,"PLAN_NOT_FOUND");if(!Number.isInteger(p.stars)||p.stars<1)return bad(c,400,"PLAN_NOT_PAYABLE");const ts=now(),row=await c.env.DB.prepare("INSERT INTO premium_invoices(user_id,plan_id,stars,duration_days,created_at) VALUES(?1,?2,?3,?4,?5) RETURNING id").bind(me,p.id,p.stars,p.duration_days,ts).first<{id:number}>();const link=await tg<string>(c.env.BOT_TOKEN,"createInvoiceLink",{title:"Telegram X Hero Premium",description:String(p.name).slice(0,255),payload:"xh"+row!.id,currency:"XTR",prices:[{label:String(p.name).slice(0,32),amount:p.stars}]});return c.json({link,stars:p.stars})});
 chat.post("/premium/request",async c=>{
  const me=c.get("user").id,b=await c.req.json().catch(()=>({})),id=Number(b.planId);
  const p=await c.env.DB.prepare("SELECT id FROM premium_plans WHERE id=?1 AND active=1").bind(id).first();
