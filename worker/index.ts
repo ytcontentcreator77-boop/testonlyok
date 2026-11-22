@@ -10,7 +10,6 @@ import { pub, setup } from "./routes/setup";
 import { getSettings } from "./settings";
 import { emojiFallbacks, tg } from "./telegram";
 import type { Env } from "./env";
-import { cleanupPendingPayments } from "./payments";
 import { app as api } from "./routes/app";
 import { chat } from "./routes/chat";
 import { bot } from "./routes/bot";
@@ -113,7 +112,7 @@ export default {
     // the bot and referral housekeeping jobs are scheduled separately.
     const jobs: Promise<unknown>[] = [commandsTick(env), broadcastTick(env)];
     // Hourly housekeeping (minute :07) so the every-minute run stays light
-    if (minute === 7) jobs.push(cleanupWebhookEvents(env), cleanupPendingPayments(env), cleanupRateLimits(env));
+    if (minute === 7) jobs.push(cleanupWebhookEvents(env), cleanupRateLimits(env));
     ctx.waitUntil(
       Promise.allSettled(jobs).then((rs) => {
         for (const r of rs) if (r.status === "rejected") console.error("cron job failed", r.reason);
