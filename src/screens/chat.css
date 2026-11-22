@@ -60,3 +60,12 @@
 .xh-archive-back{border:0;background:transparent;color:var(--brand);font-size:30px;line-height:1;width:30px;height:38px;padding:0;margin-left:-5px}
 .xh-chat-titlebar{gap:8px}
 .xh-chat-titlebar>div:first-of-type{flex:1}
+
+/* Telegram-like bottom navigation: Chats, Contacts, Settings */
+.xh-nav{height:62px;align-items:center;padding:6px 8px calc(6px + var(--safe-bottom));background:var(--bar);backdrop-filter:blur(18px)}
+.xh-nav button{min-width:68px;gap:4px;font-size:21px;padding:3px 12px}
+.xh-nav button.sel{color:var(--brand)}
+.xh-nav small{font-size:11px;font-weight:550}
+.xh-contact-add{width:38px;height:38px;border:0;border-radius:50%;background:var(--brand);color:white;font-size:23px}
+.xh-setting-button{display:block;width:100%;text-align:left;color:var(--fg);font:inherit;background:var(--card);border:0;cursor:pointer}
+.xh-setting-button:active{opacity:.72}
