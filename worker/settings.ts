@@ -45,7 +45,7 @@ export const DEFAULTS = {
   np_webhook_id: "",
   np_webhook_secret: "",
   // ---- White-label / open-source settings ----
-  brand_name: "Amit Bot", // default key-store brand; owner can rename in Branding
+  brand_name: "Telegram X Hero", // default key-store brand; owner can rename in Branding
   brand_preset: DEFAULT_PRESET,
   brand_accent: "#2457ff", // used when brand_preset is "custom"
   website_url: "",
