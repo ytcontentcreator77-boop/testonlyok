@@ -1,0 +1,10 @@
+# Copy to .dev.vars for local development (never commit .dev.vars).
+# Add the Telegram bot token here for local development.
+
+# Telegram bot token from @BotFather (https://t.me/BotFather)
+BOT_TOKEN=123456:ABC-DEF
+
+# Local development only, not asked for on deploy: opens the app in a normal browser as this Telegram user id
+# DEV_FAKE_USER_ID=1
+# Optional fixed admin ids (otherwise claim admin on the setup page)
+# OWNER_IDS=1

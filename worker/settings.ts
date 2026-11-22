@@ -1,0 +1,166 @@
+import { DEFAULT_PRESET } from "../shared/brand";
+import { brandName, parseButtonIcons, parseEmojiMap } from "./brand";
+import type { Env } from "./env";
+import { setBotBrand, setBotMessages } from "./i18n";
+import { setCustomization } from "./telegram";
+
+export const DEFAULTS = {
+  default_markup_pct: 30,
+  stars_per_usd: 77, // ≈ break-even with Telegram's Stars payout rate; markup is the profit
+  // Top-up limits in whole Stars (users see and pay in Stars; the balance is credited their dollar value)
+  min_topup_stars: 50,
+  max_topup_stars: 10_000,
+  sync_enabled: 0,
+  sync_every_hours: 6,
+  auto_enable_new: 1,
+  only_timed: 1, // list only services that have a measured average delivery time
+  low_balance: 5_000_000,
+  support_username: "",
+  howto_title: "How to use this bot",
+  howto_description: "Watch the tutorial to learn how to use the Mini App.",
+  howto_youtube_url: "",
+  howto_tiktok_url: "",
+  howto_video_url: "",
+  howto_fallback_url: "",
+  // Update channel: users must join it before using the app (bot must be an admin there). Off until a channel is set.
+  channel_url: "",
+  channel_id: "",
+  channel_gate: 1, // inactive while channel_id is empty
+  // Referrals: reward the referrer this many Stars' worth of balance when a new user joins the channel and reaches home
+  referral_enabled: 1,
+  referral_reward_stars: 3,
+  referral_daily_cap: 50,
+  terms_text:
+    "By using this app you agree that services are delivered by third parties and delivery times are estimates. " +
+    "Balance top-ups are paid in Telegram Stars and are credited to your in-app balance. Orders that cannot be " +
+    "delivered are refunded to your balance automatically.",
+  last_sync_at: 0,
+  last_sync_summary: "",
+  sync_state: "",
+  last_catalog_at: "",
+  catalog_version: 1,
+  app_url: "",
+  welcome_photo: "", // "<banner url>|<telegram file_id>"
+  bot_username: "",
+  np_webhook_id: "",
+  np_webhook_secret: "",
+  // ---- White-label / open-source settings ----
+  brand_name: "Amit Bot", // default key-store brand; owner can rename in Branding
+  brand_preset: DEFAULT_PRESET,
+  brand_accent: "#2457ff", // used when brand_preset is "custom"
+  website_url: "",
+  terms_url: "", // "" = the in-app terms text
+  welcome_text: "", // legacy welcome override
+  bot_messages: "{}", // owner-defined message templates, keyed by bot message type
+  custom_emoji: "{}", // JSON map: plain emoji -> Telegram custom emoji id (needs the bot owner's Premium)
+  button_icons: '{"open":"","viewOrder":"","terms":"","invite":""}', // JSON ButtonIcons
+  owner_ids: "", // admins claimed or added in the app (env OWNER_IDS also counts)
+  claim_code_hash: "", // SHA-256 of the one-time admin claim code
+  claim_expires: 0,
+  np_api_key: "", // Legacy supplier API key retained for historical provider_id=0 records
+  logo_ver: 0, // > 0: a logo exists (value busts caches); negative: removed
+  banner_ver: 0,
+  setup_done: 0,
+  commands_key: "", // what the command menus were last set for (see worker/commands.ts)
+  commands_step: 0,
+  broadcast_state: "", // running admin broadcast (worker/broadcast.ts), "" when none
+  alerts_sent: "{}", // last time each admin alert kind was sent (worker/alerts.ts)
+  commands_wait_until: 0,
+  names_done: 0, // 1 once the bot was named in every profile language after setup; names are never set automatically again // Telegram rate limit: resume menu/profile updates after this time
+  commands_admins: "", // admin chats that got the admin menu
+  // Key delivery and INR wallet (legacy micro-USD balance remains for old records)
+  inr_symbol: "₹",
+  inr_per_usd: 85,
+  key_delivery_mode: "auto",
+  low_stock_alert: 3,
+  key_stock_checked_at: 0,
+  api_low_balance_inr: 100,
+  api_balance_checked_at: 0,
+  reseller_api_url: "https://bantibhaiya.to/api/reseller_v1.php",
+  reseller_api_key: "",
+  reseller_master_key: "",
+  active_key_api_id: "",
+  payment_methods: "[]",
+  upi_gateway_api_key: "",
+  upi_gateway_enabled: 0,
+  upi_id: "",
+  upi_qr_url: "",
+  bonus_enabled: 1,
+  bonus_mode: "random",
+  bonus_fixed_inr: 1,
+  bonus_min_inr: 0.5,
+  bonus_max_inr: 2,
+  bonus_cooldown_hours: 24,
+  referral_signup_bonus_inr: 2,
+  referral_commission_percent: 5,
+  apk_file_id: "",
+  apk_file_name: "",
+  apk_updated_at: 0,
+  setup_steps: "", // comma list of setup steps that finished
+};
+
+export type Settings = typeof DEFAULTS;
+export type SettingKey = keyof Settings;
+
+let memo: { at: number; value: Settings } | null = null;
+const MEMO_MS = 15_000;
+// "Fresh" still reuses a read this young: the cron loads settings once and its jobs (started together) share it
+const FRESH_MS = 2_000;
+
+/** Settings, cached per isolate for 15 s. Pass fresh for anything that coordinates work (the price sync): at most 2 s old. */
+export async function getSettings(env: Env, opts: { fresh?: boolean } = {}): Promise<Settings> {
+  if (memo && Date.now() - memo.at < (opts.fresh ? FRESH_MS : MEMO_MS)) return memo.value;
+  const value = await loadSettings(env);
+  memo = { at: Date.now(), value };
+  applyBranding(value);
+  return value;
+}
+
+let applied = "";
+/** Pushes the brand name and the owner's Premium emoji/icons to the modules that format bot messages (only when changed). */
+function applyBranding(s: Settings): void {
+  const sig = `${s.brand_name}\u0000${s.custom_emoji}\u0000${s.button_icons}`;
+  if (sig === applied) return;
+  applied = sig;
+  setBotBrand(brandName(s));
+  try { setBotMessages(JSON.parse(s.bot_messages || "{}")); } catch { setBotMessages({}); }
+  setCustomization(parseEmojiMap(s.custom_emoji), parseButtonIcons(s.button_icons));
+}
+
+async function loadSettings(env: Env): Promise<Settings> {
+  const { results } = await env.DB.prepare("SELECT key, value FROM settings").all<{ key: string; value: string }>();
+  const s: any = { ...DEFAULTS };
+  for (const r of results) {
+    if (!(r.key in DEFAULTS)) continue;
+    s[r.key] = typeof (DEFAULTS as any)[r.key] === "number" ? Number(r.value) : r.value;
+  }
+  return s as Settings;
+}
+
+/** Call after writing settings rows directly (not through setSettings*), so the next read is fresh. */
+export function bustSettings(): void {
+  memo = null;
+}
+
+export function setSettingsStmts(env: Env, values: Partial<Settings>): D1PreparedStatement[] {
+  memo = null;
+  return Object.entries(values).map(([k, v]) =>
+    env.DB.prepare("INSERT INTO settings (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(
+      k,
+      String(v),
+    ),
+  );
+}
+
+export async function setSettings(env: Env, values: Partial<Settings>): Promise<void> {
+  memo = null;
+  const stmts = setSettingsStmts(env, values);
+  if (stmts.length) await env.DB.batch(stmts);
+}
+
+export function bumpCatalogStmt(env: Env): D1PreparedStatement {
+  memo = null;
+  return env.DB.prepare(
+    "INSERT INTO settings (key, value) VALUES ('catalog_version', '2') ON CONFLICT(key) DO UPDATE SET value = CAST(value AS INTEGER) + 1",
+  );
+}

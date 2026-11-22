@@ -1,0 +1,14 @@
+UPI automatic payment flow update
+
+- Key-store UPI Automatic Payment now creates the QR through the existing Gram gateway.
+- The Worker sends the QR as a Telegram photo with Verify Payment and Cancel Payment buttons.
+- The Mini App closes after Telegram confirms the QR message was sent.
+- Verify callbacks check the gateway's autoverify.php endpoint and credit INR wallet balance once.
+- The same verification helper is used by the authenticated app verification endpoint.
+- Admin configuration remains under Admin > Key-store payment methods > UPI automatic gateway.
+- Configure the gateway API key and UPI ID there; enable UPI automatic payments.
+- Existing migration 0023_upi_auto.sql already creates the transaction table; no new migration is required.
+
+Gateway endpoints retained from the supplied AMIT MINE ID CODE reference:
+  https://gateway.anujbots.in/autoqr.php
+  https://gateway.anujbots.in/autoverify.php

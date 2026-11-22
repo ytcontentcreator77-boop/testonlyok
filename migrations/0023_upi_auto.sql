@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS upi_auto_transactions (id INTEGER PRIMARY KEY AUTOINCREMENT,order_id TEXT NOT NULL UNIQUE,gateway_order_id TEXT NOT NULL UNIQUE,user_id INTEGER NOT NULL REFERENCES users(id),amount_inr REAL NOT NULL CHECK(amount_inr>0),status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','paid','failed')),utr TEXT,created_at INTEGER NOT NULL,expires_at INTEGER NOT NULL,verified_at INTEGER);
+CREATE INDEX IF NOT EXISTS idx_upi_auto_user ON upi_auto_transactions(user_id,created_at DESC);
