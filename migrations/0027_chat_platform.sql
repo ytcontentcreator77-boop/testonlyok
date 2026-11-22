@@ -1,0 +1,14 @@
+-- Telegram X Hero text-first messaging schema
+CREATE TABLE IF NOT EXISTS chat_profiles (user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE, display_name TEXT, username TEXT UNIQUE, bio TEXT NOT NULL DEFAULT '', privacy TEXT NOT NULL DEFAULT 'everyone', updated_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS chat_conversations (id INTEGER PRIMARY KEY AUTOINCREMENT, conversation_key TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS chat_members (conversation_id INTEGER NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, last_read_at INTEGER NOT NULL DEFAULT 0, muted INTEGER NOT NULL DEFAULT 0, pinned INTEGER NOT NULL DEFAULT 0, archived INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(conversation_id,user_id));
+CREATE INDEX IF NOT EXISTS chat_members_user ON chat_members(user_id,conversation_id);
+CREATE TABLE IF NOT EXISTS chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, conversation_id INTEGER NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE, sender_id INTEGER NOT NULL REFERENCES users(id), body TEXT NOT NULL, created_at INTEGER NOT NULL, edited_at INTEGER, deleted_at INTEGER, delivered_at INTEGER, read_at INTEGER);
+CREATE INDEX IF NOT EXISTS chat_messages_conversation ON chat_messages(conversation_id,id DESC);
+CREATE TABLE IF NOT EXISTS chat_blocks (blocker_id INTEGER NOT NULL REFERENCES users(id), blocked_id INTEGER NOT NULL REFERENCES users(id), created_at INTEGER NOT NULL, PRIMARY KEY(blocker_id,blocked_id));
+CREATE TABLE IF NOT EXISTS chat_reports (id INTEGER PRIMARY KEY AUTOINCREMENT, reporter_id INTEGER NOT NULL, reported_user_id INTEGER NOT NULL, message_id INTEGER, reason TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', created_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS premium_plans (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, stars INTEGER NOT NULL DEFAULT 0, duration_days INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS premium_subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id), plan_id INTEGER, starts_at INTEGER NOT NULL, expires_at INTEGER, source TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'active', created_by INTEGER);
+CREATE INDEX IF NOT EXISTS premium_user_status ON premium_subscriptions(user_id,status,expires_at);
+CREATE TABLE IF NOT EXISTS premium_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, plan_id INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created_at INTEGER NOT NULL);
+INSERT OR IGNORE INTO premium_plans(id,name,stars,duration_days,active,created_at) VALUES (1,'Hero Monthly',150,30,1,unixepoch()),(2,'Hero Quarterly',400,90,1,unixepoch()),(3,'Hero Yearly',1200,365,1,unixepoch());
