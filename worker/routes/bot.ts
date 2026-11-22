@@ -268,10 +268,10 @@ async function handle(env: Env, u: any): Promise<void> {
     // An admin's own menu (with /admin and /stats) can only be set once they have a chat with the bot
     const s = await getSettings(env);
     if (isOwner(env, s, from.id))
-      await tg(env.BOT_TOKEN, "setMyCommands", { scope: { type: "chat", chat_id: from.id }, commands: [...userCommands(lang), ...ADMIN_COMMANDS] }).catch(() => undefined);
+      await tg(env.BOT_TOKEN, "setMyCommands", { scope: { type: "chat", chat_id: from.id }, commands: [{ command: "start", description: "Open Telegram X Hero" }] }).catch(() => undefined);
     return void (await (user?.lang ? sendWelcome(env, from.id, lang, from.first_name) : pickLanguage()));
   }
-  if (cmd === "orders" || cmd === "keys") {
+  // Telegram is only the app launcher; messaging and admin operations live in the Mini App.\n  return;\n  if (cmd === "orders" || cmd === "keys") {
     const {results}=await env.DB.prepare("SELECT id,product_id,product_name,plan_duration,delivered_key,price_inr,setup_file_url FROM orders WHERE user_id=?1 AND delivered_key IS NOT NULL ORDER BY id DESC LIMIT 10").bind(from.id).all<any>();
     if(!results.length)return void(await send("🔑 You have no purchased keys yet. Open the store to browse products."));
     const botUsername=String((await getSettings(env)).bot_username||"").replace(/^@/,"");
