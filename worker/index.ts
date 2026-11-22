@@ -13,6 +13,7 @@ import type { Env } from "./env";
 import { cleanupPendingPayments } from "./payments";
 import { admin } from "./routes/admin";
 import { app as api } from "./routes/app";
+import { chat } from "./routes/chat";
 import { bot } from "./routes/bot";
 import { cleanupWebhookEvents, hooks } from "./routes/hooks";
 import { broadcastTick } from "./broadcast";
@@ -23,6 +24,7 @@ import { stockCheckTick, apiBalanceTick } from "./keyHealth";
 import { campaignNoticeTick } from "./campaigns";
 
 api.route("/admin", admin);
+api.route("/chat", chat);
 
 const app = new Hono<{ Bindings: Env }>();
 
