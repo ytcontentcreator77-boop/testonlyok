@@ -170,6 +170,12 @@ async function handle(env: Env, u: any): Promise<void> {
     .then((r) => r ?? env.DB.prepare("SELECT lang, language_code FROM users WHERE id = ?1").bind(from.id).first<{ lang: string | null; language_code: string | null }>());
   const lang = pickLang(user?.lang ?? user?.language_code);
 
+  // The bot is only a launcher for the Mini App. Keep Telegram Stars payment callbacks working,
+  // but ignore all legacy store commands, uploads, proofs and ordinary chat messages.
+  const incomingText = String(m.text ?? "").trim();
+  const isAppStart = /^\\/start(?:@\\w+)?(?:\\s+claim_[a-z0-9_]+)?$/i.test(incomingText);
+  if (!m.successful_payment && !m.refunded_payment && !isAppStart) return;
+
   if (m.successful_payment) {
     await onSuccessfulPayment(env, from, m.successful_payment);
     return;
