@@ -1,6 +1,5 @@
 import { useEffect,useState } from "preact/hooks";
 import { api } from "../api";
-import { refreshMe } from "../me";
 import { meStore } from "../store";
 import { openTelegramLink, openInvoice } from "../tg";
 import "./chat.css";
