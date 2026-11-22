@@ -21,8 +21,10 @@ chat.get("/users",async c=>{
  return c.json({users:r.results});
 });
 chat.get("/conversations",async c=>{
- const me=c.get("user").id;
- const r=await c.env.DB.prepare("SELECT c.id,c.updated_at,mine.pinned AS pinned,u.id AS peer_id,u.first_name,u.last_name,u.username,u.photo_url,u.last_seen_at,p.display_name,p.username AS app_username,m.body AS last_message,m.created_at AS last_message_at,m.sender_id AS last_sender,(SELECT COUNT(*) FROM chat_messages x WHERE x.conversation_id=c.id AND x.sender_id<>?1 AND x.read_at IS NULL) AS unread FROM chat_members mine JOIN chat_conversations c ON c.id=mine.conversation_id JOIN chat_members peer ON peer.conversation_id=c.id AND peer.user_id<>?1 JOIN users u ON u.id=peer.user_id LEFT JOIN chat_profiles p ON p.user_id=u.id LEFT JOIN chat_messages m ON m.id=(SELECT MAX(id) FROM chat_messages z WHERE z.conversation_id=c.id AND z.deleted_at IS NULL) WHERE mine.user_id=?1 AND mine.archived=?2 ORDER BY mine.pinned DESC,COALESCE(m.created_at,c.updated_at) DESC LIMIT 100").bind(me,c.req.query("archived")==="1"?1:0).all();
+ const me=c.get("user").id,archived=c.req.query("archived")==="1"?1:0,deliveredAt=now();
+ // A conversation list sync means the recipient's device has received its latest incoming messages.
+ await c.env.DB.prepare("UPDATE chat_messages SET delivered_at=COALESCE(delivered_at,?1) WHERE sender_id<>?2 AND conversation_id IN (SELECT conversation_id FROM chat_members WHERE user_id=?2 AND archived=?3)").bind(deliveredAt,me,archived).run();
+ const r=await c.env.DB.prepare("SELECT c.id,c.updated_at,mine.pinned AS pinned,u.id AS peer_id,u.first_name,u.last_name,u.username,u.photo_url,u.last_seen_at,p.display_name,p.username AS app_username,m.body AS last_message,m.created_at AS last_message_at,m.sender_id AS last_sender,(SELECT COUNT(*) FROM chat_messages x WHERE x.conversation_id=c.id AND x.sender_id<>?1 AND x.read_at IS NULL) AS unread FROM chat_members mine JOIN chat_conversations c ON c.id=mine.conversation_id JOIN chat_members peer ON peer.conversation_id=c.id AND peer.user_id<>?1 JOIN users u ON u.id=peer.user_id LEFT JOIN chat_profiles p ON p.user_id=u.id LEFT JOIN chat_messages m ON m.id=(SELECT MAX(id) FROM chat_messages z WHERE z.conversation_id=c.id AND z.deleted_at IS NULL) WHERE mine.user_id=?1 AND mine.archived=?2 ORDER BY mine.pinned DESC,COALESCE(m.created_at,c.updated_at) DESC LIMIT 100").bind(me,archived).all();
  return c.json({conversations:r.results});
 });
 chat.post("/conversations",async c=>{
