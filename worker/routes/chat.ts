@@ -68,6 +68,26 @@ chat.post("/premium/request",async c=>{
  await c.env.DB.prepare("INSERT INTO premium_requests(user_id,plan_id,created_at) VALUES(?1,?2,?3)").bind(me,id,now()).run();
  return c.json({ok:true});
 });
+chat.get("/admin/users",async c=>{
+ if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
+ const q=(c.req.query("q")||"").trim().replace(/^@/,"").slice(0,64);
+ if(q.length<2)return c.json({users:[]});
+ const like="%"+q.replace(/[\\%_]/g,"\\chat.get("/admin/overview",async c=>{")+"%";
+ const r=await c.env.DB.prepare("SELECT id,first_name,last_name,username,photo_url,banned,created_at FROM users WHERE CAST(id AS TEXT)=?1 OR first_name LIKE ?2 ESCAPE '\\' OR last_name LIKE ?2 ESCAPE '\\' OR (first_name||' '||COALESCE(last_name,'')) LIKE ?2 ESCAPE '\\' OR username LIKE ?2 ESCAPE '\\' ORDER BY created_at DESC LIMIT 30").bind(q,like).all();
+ return c.json({users:r.results});
+});
+chat.post("/admin/users/:id/ban",async c=>{
+ if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
+ const id=Number(c.req.param("id"));if(!Number.isSafeInteger(id)||id<1||id===c.get("user").id)return bad(c,400,"INVALID_USER");
+ const r=await c.env.DB.prepare("UPDATE users SET banned=1 WHERE id=?1").bind(id).run();
+ return r.meta.changes?c.json({ok:true}):bad(c,404,"USER_NOT_FOUND");
+});
+chat.post("/admin/users/:id/unban",async c=>{
+ if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
+ const id=Number(c.req.param("id"));if(!Number.isSafeInteger(id)||id<1)return bad(c,400,"INVALID_USER");
+ const r=await c.env.DB.prepare("UPDATE users SET banned=0 WHERE id=?1").bind(id).run();
+ return r.meta.changes?c.json({ok:true}):bad(c,404,"USER_NOT_FOUND");
+});
 chat.get("/admin/overview",async c=>{
  if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
  const [u,m,p,r]=await Promise.all([c.env.DB.prepare("SELECT COUNT(*) n FROM users").first<any>(),c.env.DB.prepare("SELECT COUNT(*) n FROM chat_messages").first<any>(),c.env.DB.prepare("SELECT COUNT(*) n FROM premium_subscriptions WHERE status='active' AND (expires_at IS NULL OR expires_at>?1)").bind(now()).first<any>(),c.env.DB.prepare("SELECT COUNT(*) n FROM premium_requests WHERE status='pending'").first<any>()]);
