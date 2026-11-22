@@ -1,11 +1,10 @@
-# Project agent notes — Amit Bot Key Store
+# Telegram X Hero — project notes
 
-- Primary customer flow is the key storefront, INR wallet, key purchase and delivery. Do not re-enable the legacy SMM `/orders` creation route.
-- New key-store database changes belong in a new numbered SQL migration under `migrations/`; never edit an already deployed migration.
-- All key purchases must debit `users.balance_inr`. Telegram Stars may top up the INR wallet only and must never be used for direct key checkout.
-- Keep reseller API credentials server-side. Do not hardcode API keys/master keys or return them from admin GET endpoints.
-- Verify all new key endpoints against Telegram user ownership and admin role checks.
-- Use `inr_ledger` for all INR balance credits/debits/refunds.
-- Manual payment requests remain pending until an admin explicitly approves them.
-- Preserve the existing Worker, D1, Vite and Preact architecture; avoid adding paid infrastructure requirements.
-- Run `npm ci`, `npm run build`, tests and D1 migration validation before production release.
+- This repository is a Telegram-authenticated messaging Mini App, not a store. Do not add storefront, wallet, payment-provider, inventory, or product-delivery features.
+- User identity comes from Telegram Mini App initData. Validate its HMAC signature before trusting the user object.
+- On every authenticated app launch, sync Telegram id, first_name, last_name, username, language_code, and photo_url into the existing user record. Never let clients submit another user's identity fields.
+- Keep Telegram bot token and all credentials server-side. Never expose secrets in API responses or frontend bundles.
+- Preserve the Worker, D1, Hono, Vite and Preact architecture.
+- Do not claim a Premium feature is active unless the backend enforces it.
+- Add new D1 changes as new numbered migrations; do not rewrite migrations already applied to deployed databases.
+- Before release, run dependency installation, production build, tests, and migration validation. Report any checks that could not be run.
