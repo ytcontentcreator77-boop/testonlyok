@@ -16,7 +16,7 @@ chat.get("/users",async c=>{
 });
 chat.get("/conversations",async c=>{
  const me=c.get("user").id;
- const r=await c.env.DB.prepare("SELECT c.id,c.updated_at,u.id AS peer_id,u.first_name,u.last_name,u.username,u.photo_url,u.last_seen_at,p.display_name,p.username AS app_username,m.body AS last_message,m.created_at AS last_message_at,m.sender_id AS last_sender,(SELECT COUNT(*) FROM chat_messages x WHERE x.conversation_id=c.id AND x.sender_id<>?1 AND x.read_at IS NULL) AS unread FROM chat_members mine JOIN chat_conversations c ON c.id=mine.conversation_id JOIN chat_members peer ON peer.conversation_id=c.id AND peer.user_id<>?1 JOIN users u ON u.id=peer.user_id LEFT JOIN chat_profiles p ON p.user_id=u.id LEFT JOIN chat_messages m ON m.id=(SELECT MAX(id) FROM chat_messages z WHERE z.conversation_id=c.id AND z.deleted_at IS NULL) WHERE mine.user_id=?1 AND mine.archived=0 ORDER BY COALESCE(m.created_at,c.updated_at) DESC LIMIT 100").bind(me).all();
+ const r=await c.env.DB.prepare("SELECT c.id,c.updated_at,u.id AS peer_id,u.first_name,u.last_name,u.username,u.photo_url,u.last_seen_at,p.display_name,p.username AS app_username,m.body AS last_message,m.created_at AS last_message_at,m.sender_id AS last_sender,(SELECT COUNT(*) FROM chat_messages x WHERE x.conversation_id=c.id AND x.sender_id<>?1 AND x.read_at IS NULL) AS unread FROM chat_members mine JOIN chat_conversations c ON c.id=mine.conversation_id JOIN chat_members peer ON peer.conversation_id=c.id AND peer.user_id<>?1 JOIN users u ON u.id=peer.user_id LEFT JOIN chat_profiles p ON p.user_id=u.id LEFT JOIN chat_messages m ON m.id=(SELECT MAX(id) FROM chat_messages z WHERE z.conversation_id=c.id AND z.deleted_at IS NULL) WHERE mine.user_id=?1 AND mine.archived=?2 ORDER BY mine.pinned DESC,COALESCE(m.created_at,c.updated_at) DESC LIMIT 100").bind(me,c.req.query("archived")==="1"?1:0).all();
  return c.json({conversations:r.results});
 });
 chat.post("/conversations",async c=>{
@@ -36,7 +36,7 @@ chat.get("/conversations/:id/messages",async c=>{
  const me=c.get("user").id,id=Number(c.req.param("id"));
  const member=await c.env.DB.prepare("SELECT 1 FROM chat_members WHERE conversation_id=?1 AND user_id=?2").bind(id,me).first();
  if(!member)return bad(c,404,"CHAT_NOT_FOUND");
- const r=await c.env.DB.prepare("SELECT id,sender_id,body,created_at,edited_at,read_at,delivered_at FROM chat_messages WHERE conversation_id=?1 AND deleted_at IS NULL ORDER BY id DESC LIMIT 100").bind(id).all();
+ const r=await c.env.DB.prepare("SELECT id,sender_id,body,created_at,edited_at,read_at,delivered_at FROM chat_messages WHERE conversation_id=?1 AND deleted_at IS NULL AND NOT EXISTS(SELECT 1 FROM chat_message_hidden h WHERE h.message_id=chat_messages.id AND h.user_id=?2) ORDER BY id DESC LIMIT 100").bind(id).all();
  await c.env.DB.prepare("UPDATE chat_messages SET delivered_at=COALESCE(delivered_at,?1),read_at=COALESCE(read_at,?1) WHERE conversation_id=?2 AND sender_id<>?3").bind(now(),id,me).run();
  return c.json({messages:r.results.reverse()});
 });
