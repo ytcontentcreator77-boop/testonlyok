@@ -93,6 +93,15 @@ chat.post("/admin/users/:id/unban",async c=>{
  const r=await c.env.DB.prepare("UPDATE users SET banned=0 WHERE id=?1").bind(id).run();
  return r.meta.changes?c.json({ok:true}):bad(c,404,"USER_NOT_FOUND");
 });
+chat.get("/brand",async c=>{
+ const r=await c.env.DB.prepare("SELECT brand_name,brand_description FROM chat_platform_settings WHERE id=1").first<any>();
+ return c.json({brandName:r?.brand_name||"Telegram X Hero",brandDescription:r?.brand_description||"Private messaging"});
+});
+chat.get("/admin/pin-limits",async c=>{
+ if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
+ const r=await c.env.DB.prepare("SELECT free_pin_limit,premium_pin_limit FROM chat_platform_settings WHERE id=1").first<any>();
+ return c.json({freePinLimit:Number(r?.free_pin_limit??3),premiumPinLimit:Number(r?.premium_pin_limit??10)});
+});
 chat.get("/admin/branding",async c=>{
  if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
  const r=await c.env.DB.prepare("SELECT brand_name,brand_description FROM chat_platform_settings WHERE id=1").first<any>();
