@@ -6,7 +6,7 @@ import { Icon } from "../icons";
 
 import { updateMe } from "../me";
 import { meStore } from "../store";
-import { haptic, homeScreen, openTelegramLink, requestWriteAccess, webApp } from "../tg";
+import { homeScreen, openTelegramLink, requestWriteAccess, webApp } from "../tg";
 import { TermsSheet, openExternalTerms } from "./Terms";
 import { brandStore } from "../theme";
 import { BrandMark, LargeTitle, List, Row, Screen, Section, Sheet, errText, toast } from "../ui";
