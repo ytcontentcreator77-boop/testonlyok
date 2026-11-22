@@ -80,8 +80,9 @@ export async function onPreCheckout(env: Env, q: { id: string; from: { id: numbe
   const premiumMatch = /^xh(\d+)$/.exec(q.invoice_payload);
   if (premiumMatch) {
     const premium = await env.DB.prepare("SELECT id,user_id,stars,status,created_at FROM premium_invoices WHERE id=?1").bind(Number(premiumMatch[1])).first<any>();
-    const valid = !!premium && premium.status === "pending" && premium.user_id === q.from.id && q.currency === "XTR" && q.total_amount === premium.stars && Math.floor(Date.now()/1000)-premium.created_at < 3600;
-    await tg(env.BOT_TOKEN,"answerPreCheckoutQuery",{pre_checkout_query_id:q.id,ok:valid,...(!valid?{error_message:"This premium invoice expired. Please create a new one."}:{})});
+    const banned = !!(await env.DB.prepare("SELECT banned FROM users WHERE id=?1").bind(q.from.id).first<{banned:number}>())?.banned;
+    const valid = !!premium && premium.status === "pending" && premium.user_id === q.from.id && q.currency === "XTR" && q.total_amount === premium.stars && Math.floor(Date.now()/1000)-premium.created_at < 3600 && !banned;
+    await tg(env.BOT_TOKEN,"answerPreCheckoutQuery",{pre_checkout_query_id:q.id,ok:valid,...(!valid?{error_message:banned?"Your account cannot make payments.":"This premium invoice expired. Please create a new one."}:{})});
     return;
   }
   const p = await paymentFromPayload(env, q.invoice_payload);
