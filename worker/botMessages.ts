@@ -38,7 +38,7 @@ export function customWelcome(template: string, name: string, brand: string): st
  */
 export async function sendWelcome(env: Env, chatId: number, _lang: Lang, name: string): Promise<void> {
   const s = await getSettings(env);
-  const open = openButton(lang, s);
+  const open = openButton(_lang, s);
   const reply_markup = open ? { inline_keyboard: [[open]] } : undefined;
   const safeName = escapeHtml(name || "there");
   const caption = `👋 <b>Welcome to Telegram X Hero, ${safeName}!</b>\n\nA simple, private place to connect and chat. Open the Mini App to find people, start conversations, manage your profile and explore Premium features.`;
