@@ -40,21 +40,15 @@ export async function sendWelcome(env: Env, chatId: number, lang: Lang, name: st
   const s = await getSettings(env);
   const open = openButton(lang, s);
   const reply_markup = open ? { inline_keyboard: [[open]] } : undefined;
-  const caption = hasCustomBotMessage("welcome") ? botText(lang, "welcome", { name: name || "there" }) : s.welcome_text.trim() ? customWelcome(s.welcome_text, name || "there", brandName(s)) : botText(lang, "welcome", { name: name || "there" });
-  const url = s.app_url && s.banner_ver > 0 ? `${s.app_url}/media/banner?v=${s.banner_ver}` : "";
-  if (url) {
-    const [cachedUrl, fileId] = (s.welcome_photo || "|").split("|");
-    const photo = fileId && cachedUrl === url ? fileId : url;
-    try {
-      const msg = await tg<{ photo?: { file_id: string }[] }>(env.BOT_TOKEN, "sendPhoto", { chat_id: chatId, photo, caption, parse_mode: "HTML", reply_markup });
-      const id = msg.photo?.at(-1)?.file_id;
-      if (id && photo === url) await setSettings(env, { welcome_photo: `${url}|${id}` });
-      return;
-    } catch (e) {
-      console.warn("welcome photo failed, sending text", (e as Error).message);
-    }
-  }
-  await tg(env.BOT_TOKEN, "sendMessage", { chat_id: chatId, text: caption, parse_mode: "HTML", link_preview_options: { is_disabled: true }, reply_markup });
+  const safeName = escapeHtml(name || "there");
+  const caption = `👋 <b>Welcome to Telegram X Hero, ${safeName}!</b>\n\nA simple, private place to connect and chat. Open the Mini App to find people, start conversations, manage your profile and explore Premium features.`;
+  await tg(env.BOT_TOKEN, "sendMessage", {
+    chat_id: chatId,
+    text: caption,
+    parse_mode: "HTML",
+    link_preview_options: { is_disabled: true },
+    reply_markup,
+  });
 }
 
 /** Terms button: the owner's terms link, else the in-app terms page, else none */
