@@ -85,6 +85,8 @@ export async function onPreCheckout(env: Env, q: { id: string; from: { id: numbe
     await tg(env.BOT_TOKEN,"answerPreCheckoutQuery",{pre_checkout_query_id:q.id,ok:valid,...(!valid?{error_message:banned?"Your account cannot make payments.":"This premium invoice expired. Please create a new one."}:{})});
     return;
   }
+  await tg(env.BOT_TOKEN,"answerPreCheckoutQuery",{pre_checkout_query_id:q.id,ok:false,error_message:"Wallet top-ups are no longer available. Choose a Premium plan in the app."});
+  return;
   const p = await paymentFromPayload(env, q.invoice_payload);
   const now = Math.floor(Date.now() / 1000);
   const valid =
@@ -123,6 +125,8 @@ export async function onSuccessfulPayment(
     return;
   }
 
+  console.warn("legacy wallet Stars payment ignored",sp.telegram_payment_charge_id);
+  return;
   const p = await paymentFromPayload(env, sp.invoice_payload);
   if (!p) {
     console.error("payment without record", sp.telegram_payment_charge_id);
