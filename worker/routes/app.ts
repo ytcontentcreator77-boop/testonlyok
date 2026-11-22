@@ -123,7 +123,7 @@ app.use("*", async (c, next) => {
 // Legacy storefront APIs are retired. Keep the handlers below temporarily for migration
 // compatibility, but do not expose catalog, wallet, key, order, coupon or campaign endpoints.
 app.use("*", async (c, next) => {
-  if (/^\\/api\\/(?:catalog|orders|wallet|keys|upi-auto|coupon|bonus|campaigns|referrals?)(?:\\/|$)/.test(c.req.path)) {
+  if (/^\/api\/(?:catalog|orders|wallet|keys|upi-auto|coupon|bonus|campaigns|referrals?)(?:\/|$)/.test(c.req.path)) {
     return err(c, 410, "STORE_FEATURES_RETIRED");
   }
   await next();
