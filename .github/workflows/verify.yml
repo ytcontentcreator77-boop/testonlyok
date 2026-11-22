@@ -21,4 +21,6 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npm run build
+      - name: Production build
+        if: always()
+        run: npm run build
