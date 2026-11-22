@@ -5,11 +5,12 @@ import { tg } from "../telegram";
 export const chat = new Hono<AppEnv>();
 const now=()=>Math.floor(Date.now()/1000);
 const bad=(c:any,s:number,code:string)=>c.json({error:code,code},s);
+chat.use("*",async(c,next)=>{if(!c.get("user").can_message)return bad(c,403,"BOT_START_REQUIRED");await next()});
 chat.get("/users",async c=>{
  const me=c.get("user").id,q=(c.req.query("q")||"").trim().slice(0,64);
  if(q.length<2)return c.json({users:[]});
  const like="%"+q.replace(/[\\%_]/g,"\\$&")+"%";
- const r=await c.env.DB.prepare("SELECT u.id,u.first_name,u.last_name,u.username,u.photo_url,p.display_name,p.username AS app_username FROM users u LEFT JOIN chat_profiles p ON p.user_id=u.id WHERE u.id<>?1 AND u.banned=0 AND (u.first_name LIKE ?2 ESCAPE '\\' OR u.last_name LIKE ?2 ESCAPE '\\' OR u.username LIKE ?2 ESCAPE '\\' OR p.username LIKE ?2 ESCAPE '\\' OR CAST(u.id AS TEXT)=?3) AND NOT EXISTS(SELECT 1 FROM chat_blocks b WHERE (b.blocker_id=u.id AND b.blocked_id=?1) OR (b.blocker_id=?1 AND b.blocked_id=u.id)) ORDER BY u.last_seen_at DESC LIMIT 30").bind(me,like,q).all();
+ const r=await c.env.DB.prepare("SELECT u.id,u.first_name,u.last_name,u.username,u.photo_url,p.display_name,p.username AS app_username FROM users u LEFT JOIN chat_profiles p ON p.user_id=u.id WHERE u.id<>?1 AND u.banned=0 AND u.can_message=1 AND (u.first_name LIKE ?2 ESCAPE '\\' OR u.last_name LIKE ?2 ESCAPE '\\' OR u.username LIKE ?2 ESCAPE '\\' OR p.username LIKE ?2 ESCAPE '\\' OR CAST(u.id AS TEXT)=?3) AND NOT EXISTS(SELECT 1 FROM chat_blocks b WHERE (b.blocker_id=u.id AND b.blocked_id=?1) OR (b.blocker_id=?1 AND b.blocked_id=u.id)) ORDER BY u.last_seen_at DESC LIMIT 30").bind(me,like,q).all();
  return c.json({users:r.results});
 });
 chat.get("/conversations",async c=>{
@@ -20,7 +21,7 @@ chat.get("/conversations",async c=>{
 chat.post("/conversations",async c=>{
  const me=c.get("user").id,b=await c.req.json().catch(()=>({})),peer=Number(b.userId);
  if(!Number.isSafeInteger(peer)||peer<=0||peer===me)return bad(c,400,"INVALID_USER");
- const u=await c.env.DB.prepare("SELECT id FROM users WHERE id=?1 AND banned=0").bind(peer).first();
+ const u=await c.env.DB.prepare("SELECT id FROM users WHERE id=?1 AND banned=0 AND can_message=1").bind(peer).first();
  if(!u)return bad(c,404,"USER_NOT_FOUND");
  const block=await c.env.DB.prepare("SELECT 1 FROM chat_blocks WHERE (blocker_id=?1 AND blocked_id=?2) OR (blocker_id=?2 AND blocked_id=?1)").bind(me,peer).first();
  if(block)return bad(c,403,"BLOCKED");
