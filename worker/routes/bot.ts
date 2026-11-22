@@ -173,7 +173,7 @@ async function handle(env: Env, u: any): Promise<void> {
   // The bot is only a launcher for the Mini App. Keep Telegram Stars payment callbacks working,
   // but ignore all legacy store commands, uploads, proofs and ordinary chat messages.
   const incomingText = String(m.text ?? "").trim();
-  const isAppStart = /^\\/start(?:@\\w+)?(?:\\s+claim_[a-z0-9_]+)?$/i.test(incomingText);
+  const isAppStart = /^\/start(?:@\w+)?(?:\s+claim_[a-z0-9_]+)?$/i.test(incomingText);
   if (!m.successful_payment && !m.refunded_payment && !isAppStart) return;
 
   if (m.successful_payment) {
