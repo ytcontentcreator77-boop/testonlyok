@@ -78,3 +78,16 @@
 .xh-message-actions{display:none}
 .xh-bubble.selected .xh-message-actions{display:flex}
 .xh-bubble{cursor:pointer}
+
+/* Premium purchase screen */
+.xh-premiumhero{position:relative;overflow:hidden;margin:12px 0 20px;padding:25px 22px;border:1px solid #ffffff20;box-shadow:0 12px 28px #35317a22}
+.xh-premiumhero:after{content:"✦";position:absolute;right:18px;top:8px;font-size:92px;line-height:1;color:#ffffff18;transform:rotate(12deg)}
+.xh-premiumhero>span{font-size:10px;letter-spacing:1.7px;font-weight:800;opacity:.8}
+.xh-premiumhero h2{max-width:230px;font-size:27px;line-height:1.08;margin:17px 0 8px;letter-spacing:-.5px}
+.xh-premiumhero p{max-width:250px;font-size:13px;line-height:1.5;opacity:.85}
+.xh-plan{background:var(--card);border:1px solid var(--sep);border-radius:15px;padding:15px 13px;margin:9px 0;flex-wrap:wrap}
+.xh-plan>div{min-width:110px}
+.xh-plan>strong{white-space:nowrap;font-size:15px}
+.xh-plan button{min-height:36px;padding:0 15px}
+.xh-feature{border-radius:14px}
+.xh-profile{border:1px solid var(--sep);box-shadow:0 4px 18px #00000008}
