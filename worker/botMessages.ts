@@ -4,8 +4,8 @@ import { langLabel, type Lang } from "../shared/types";
 import type { Env } from "./env";
 import { validHttpsUrl } from "../shared/brand";
 import { brandName } from "./brand";
-import { botText, escapeHtml, hasCustomBotMessage } from "./i18n";
-import { getSettings, setSettings, type Settings } from "./settings";
+import { botText, escapeHtml } from "./i18n";
+import { getSettings, type Settings } from "./settings";
 import { linkButton, tg, webAppButton } from "./telegram";
 import { groupInt } from "../shared/num";
 
