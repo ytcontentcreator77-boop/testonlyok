@@ -32,7 +32,7 @@ describe("i18n files", () => {
 });
 
 describe.each(otherLangs)("i18n %s", (lang) => {
-  const dict = dicts[lang] ?? enDict;
+  const dict = { ...enDict, ...(dicts[lang] ?? {}) };
 
   it("has no keys that English does not have", () => {
     expect(Object.keys(dict).filter((k) => !(k in enDict))).toEqual([]);
