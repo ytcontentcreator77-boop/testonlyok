@@ -36,7 +36,7 @@ export function customWelcome(template: string, name: string, brand: string): st
  * Welcome with the owner's banner (if one is uploaded), the feature caption and an Open button; text only otherwise.
  * Reuses Telegram's file_id after the first send; a new banner changes the URL (banner_ver), which drops the cache.
  */
-export async function sendWelcome(env: Env, chatId: number, lang: Lang, name: string): Promise<void> {
+export async function sendWelcome(env: Env, chatId: number, _lang: Lang, name: string): Promise<void> {
   const s = await getSettings(env);
   const open = openButton(lang, s);
   const reply_markup = open ? { inline_keyboard: [[open]] } : undefined;
