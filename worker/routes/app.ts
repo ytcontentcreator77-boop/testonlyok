@@ -50,9 +50,9 @@ async function upsertUser(env: Env, u: TgUser): Promise<UserRow> {
     `INSERT INTO users (id, first_name, last_name, username, photo_url, language_code, notify, created_at, last_seen_at)
      VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1, ?7, ?7)
      ON CONFLICT(id) DO UPDATE SET first_name = excluded.first_name, last_name = excluded.last_name, username = excluded.username,
-       photo_url = excluded.photo_url, language_code = excluded.language_code, last_seen_at = excluded.last_seen_at
+       photo_url = COALESCE(excluded.photo_url, users.photo_url), language_code = excluded.language_code, last_seen_at = excluded.last_seen_at
      WHERE users.first_name IS NOT excluded.first_name OR users.last_name IS NOT excluded.last_name
-       OR users.username IS NOT excluded.username OR users.photo_url IS NOT excluded.photo_url
+       OR users.username IS NOT excluded.username OR (excluded.photo_url IS NOT NULL AND users.photo_url IS NOT excluded.photo_url)
        OR users.language_code IS NOT excluded.language_code OR users.last_seen_at < excluded.last_seen_at - 86400
      RETURNING *`,
   )
@@ -88,9 +88,9 @@ app.use("*", async (c, next) => {
     startParam = c.req.header("x-dev-start") ?? null;
   }
   if (!tgUser) return err(c, 401, "UNAUTHORIZED");
-  const isMe = c.req.path.endsWith("/api/me") && c.req.method === "GET";
-  let user = isMe ? null : await c.env.DB.prepare("SELECT * FROM users WHERE id = ?1").bind(tgUser.id).first<UserRow>();
-  if (!user) user = await upsertUser(c.env, tgUser);
+  // Refresh signed Telegram identity on every authenticated request. The upsert's WHERE clause
+  // avoids routine writes, while still syncing changed names, usernames, language and photo URLs.
+  const user = await upsertUser(c.env, tgUser);
   if (user.banned) return err(c, 403, "BANNED");
   const settings = await getSettings(c.env);
   c.set("tgUser", tgUser);
