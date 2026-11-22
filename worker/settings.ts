@@ -16,24 +16,11 @@ export const DEFAULTS = {
   only_timed: 1, // list only services that have a measured average delivery time
   low_balance: 5_000_000,
   support_username: "",
-  howto_title: "How to use this bot",
-  howto_description: "Watch the tutorial to learn how to use the Mini App.",
-  howto_youtube_url: "",
-  howto_tiktok_url: "",
-  howto_video_url: "",
-  howto_fallback_url: "",
   // Update channel: users must join it before using the app (bot must be an admin there). Off until a channel is set.
   channel_url: "",
   channel_id: "",
   channel_gate: 1, // inactive while channel_id is empty
-  // Referrals: reward the referrer this many Stars' worth of balance when a new user joins the channel and reaches home
-  referral_enabled: 1,
-  referral_reward_stars: 3,
-  referral_daily_cap: 50,
-  terms_text:
-    "By using this app you agree that services are delivered by third parties and delivery times are estimates. " +
-    "Balance top-ups are paid in Telegram Stars and are credited to your in-app balance. Orders that cannot be " +
-    "delivered are refunded to your balance automatically.",
+  terms_text: "By using Telegram X Hero you agree to follow the community rules and use private messaging responsibly.",
   last_sync_at: 0,
   last_sync_summary: "",
   sync_state: "",
@@ -91,8 +78,6 @@ export const DEFAULTS = {
   bonus_min_inr: 0.5,
   bonus_max_inr: 2,
   bonus_cooldown_hours: 24,
-  referral_signup_bonus_inr: 2,
-  referral_commission_percent: 5,
   apk_file_id: "",
   apk_file_name: "",
   apk_updated_at: 0,
