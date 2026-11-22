@@ -91,3 +91,5 @@
 .xh-plan button{min-height:36px;padding:0 15px}
 .xh-feature{border-radius:14px}
 .xh-profile{border:1px solid var(--sep);box-shadow:0 4px 18px #00000008}
+
+.xh-load-older{display:block;margin:10px auto 16px;padding:8px 14px;border:1px solid var(--xh-border,#dfe5ec);border-radius:18px;background:var(--xh-card,#fff);color:var(--xh-muted,#687789);font:inherit;font-size:12px}
