@@ -32,3 +32,5 @@ INSERT OR IGNORE INTO premium_feature_catalog(feature_key,title,description) VAL
 ('chat_backup','Chat backup','Create downloadable chat backups'),
 ('multiple_profiles','Profile themes','Save multiple profile looks'),
 ('premium_analytics','Usage insights','View personal chat activity insights');
+
+CREATE TABLE IF NOT EXISTS chat_message_hidden (message_id INTEGER NOT NULL REFERENCES chat_messages(id) ON DELETE CASCADE,user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,created_at INTEGER NOT NULL DEFAULT (unixepoch()),PRIMARY KEY(message_id,user_id));
