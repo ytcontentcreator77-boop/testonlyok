@@ -15,8 +15,6 @@ export interface UserRow {
   photo_url: string | null;
   language_code: string | null;
   lang: string | null;
-  balance: number;
-  balance_inr: number;
   notify: number;
   can_message: number;
   terms_accepted_at: number | null;
@@ -153,18 +151,6 @@ app.post("/announcements/:id/dismiss", async (c) => {
   if (!Number.isSafeInteger(id) || id <= 0) return err(c, 400, "INVALID_ID");
   await c.env.DB.prepare("INSERT OR IGNORE INTO announcement_dismissals(user_id,announcement_id,dismissed_at) SELECT ?1,id,?3 FROM announcements WHERE id=?2").bind(c.get("user").id,id,Math.floor(Date.now()/1000)).run();
   return c.json({ ok: true });
-});
-
-app.get("/how-to-use", (c) => {
-  const s = c.get("settings");
-  return c.json({
-    howto_title: s.howto_title,
-    howto_description: s.howto_description,
-    howto_youtube_url: s.howto_youtube_url,
-    howto_tiktok_url: s.howto_tiktok_url,
-    howto_video_url: s.howto_video_url,
-    howto_fallback_url: s.howto_fallback_url
-  });
 });
 
 app.get("/developer/profile", async (c) => {
