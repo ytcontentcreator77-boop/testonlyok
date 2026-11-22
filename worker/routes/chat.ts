@@ -72,7 +72,19 @@ chat.get("/admin/users",async c=>{
  if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
  const q=(c.req.query("q")||"").trim().replace(/^@/,"").slice(0,64);
  if(q.length<2)return c.json({users:[]});
- const like="%"+q.replace(/[\\%_]/g,"\\chat.get("/admin/overview",async c=>{")+"%";
+ const like="%"+q.replace(/[\\%_]/g,"\\chat.get("/admin/branding",async c=>{
+ if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
+ const r=await c.env.DB.prepare("SELECT brand_name,brand_description FROM chat_platform_settings WHERE id=1").first<any>();
+ return c.json({brandName:r?.brand_name||"Telegram X Hero",brandDescription:r?.brand_description||"Private messaging"});
+});
+chat.put("/admin/branding",async c=>{
+ if(!isOwner(c.env,c.get("settings"),c.get("user").id))return bad(c,403,"FORBIDDEN");
+ const b=await c.req.json().catch(()=>({})),name=String(b.brandName||"").trim().slice(0,48),description=String(b.brandDescription||"").trim().slice(0,120);
+ if(!name)return bad(c,400,"INVALID_BRAND_NAME");
+ await c.env.DB.prepare("UPDATE chat_platform_settings SET brand_name=?1,brand_description=?2,updated_at=?3 WHERE id=1").bind(name,description,now()).run();
+ return c.json({ok:true,brandName:name,brandDescription:description});
+});
+chat.get("/admin/overview",async c=>{")+"%";
  const r=await c.env.DB.prepare("SELECT id,first_name,last_name,username,photo_url,banned,created_at FROM users WHERE CAST(id AS TEXT)=?1 OR first_name LIKE ?2 ESCAPE '\\' OR last_name LIKE ?2 ESCAPE '\\' OR (first_name||' '||COALESCE(last_name,'')) LIKE ?2 ESCAPE '\\' OR username LIKE ?2 ESCAPE '\\' ORDER BY created_at DESC LIMIT 30").bind(q,like).all();
  return c.json({users:r.results});
 });
