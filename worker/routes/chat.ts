@@ -52,8 +52,9 @@ chat.get("/conversations/:id/messages",async c=>{
   c.env.DB.prepare("UPDATE chat_messages SET read_at=COALESCE(read_at,?1) WHERE conversation_id=?2 AND sender_id<>?3").bind(readAt,id,me),
   c.env.DB.prepare("UPDATE chat_members SET last_read_at=?3 WHERE conversation_id=?1 AND user_id=?2").bind(id,me,readAt)
  ]);
- const r=await c.env.DB.prepare("SELECT id,sender_id,body,created_at,edited_at,read_at,delivered_at,forwarded_from_id FROM chat_messages WHERE conversation_id=?1 AND deleted_at IS NULL AND NOT EXISTS(SELECT 1 FROM chat_message_hidden h WHERE h.message_id=chat_messages.id AND h.user_id=?2) ORDER BY id DESC LIMIT 100").bind(id,me).all();
- return c.json({messages:r.results.reverse()});
+ const before=Number(c.req.query("before"))||Number.MAX_SAFE_INTEGER;
+ const r=await c.env.DB.prepare("SELECT id,sender_id,body,created_at,edited_at,read_at,delivered_at,forwarded_from_id FROM chat_messages WHERE conversation_id=?1 AND deleted_at IS NULL AND id<?3 AND NOT EXISTS(SELECT 1 FROM chat_message_hidden h WHERE h.message_id=chat_messages.id AND h.user_id=?2) ORDER BY id DESC LIMIT 100").bind(id,me,before).all();
+ return c.json({messages:r.results.reverse(),hasMore:r.results.length===100});
 });
 chat.post("/conversations/:id/messages",async c=>{
  const me=c.get("user").id,id=Number(c.req.param("id")),b=await c.req.json().catch(()=>({})),body=typeof b.body==="string"?b.body.trim():"";
