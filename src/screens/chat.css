@@ -56,3 +56,7 @@
 .xh-chatview{height:calc(100dvh - 66px - var(--safe-bottom));}
 @media(min-width:700px){.xh-main{max-width:680px}.xh-chatview{border-left:1px solid var(--sep);border-right:1px solid var(--sep)}}
 @media(max-width:380px){.xh-main{padding:16px 12px}.xh-chat-open .xh-peerpic{width:46px;height:46px}.xh-row-actions button{padding:2px}.xh-chatmeta{min-width:43px}}
+
+.xh-archive-back{border:0;background:transparent;color:var(--brand);font-size:30px;line-height:1;width:30px;height:38px;padding:0;margin-left:-5px}
+.xh-chat-titlebar{gap:8px}
+.xh-chat-titlebar>div:first-of-type{flex:1}
