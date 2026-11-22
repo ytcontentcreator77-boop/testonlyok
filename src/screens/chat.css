@@ -13,3 +13,46 @@
 .xh-chatrow:active,.xh-results button:active{background:var(--card)}
 .xh-chattext b{font-weight:650}
 .xh-search{position:sticky;top:66px;z-index:3}
+
+/* Refined Telegram-inspired conversation layout */
+.xh-chat-titlebar{display:flex;align-items:center;justify-content:space-between;margin:12px 2px 18px}
+.xh-chat-titlebar h1{font-size:27px;line-height:1.15;margin:0;font-weight:750;letter-spacing:-.7px}
+.xh-title-actions{display:flex;align-items:center;gap:9px}
+.xh-title-actions button{width:40px;height:40px;border:0;border-radius:50%;background:var(--card);color:var(--fg);font-size:22px}
+.xh-search{height:42px;border:0;border-radius:12px;background:color-mix(in srgb,var(--hint) 12%,var(--card));box-shadow:none;top:66px}
+.xh-search>span{font-size:21px;color:var(--hint)}
+.xh-sectionlabel{margin:22px 3px 8px;letter-spacing:.45px;font-size:11px}
+.xh-folder-row{width:100%;display:flex;align-items:center;gap:14px;text-align:left;border:0;border-bottom:1px solid var(--sep);padding:13px 4px;background:transparent;color:var(--fg)}
+.xh-folder-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--brand) 16%,var(--card));color:var(--brand);font-size:22px}
+.xh-folder-row>span:nth-child(2){flex:1;min-width:0}
+.xh-folder-row b,.xh-folder-row small{display:block}
+.xh-folder-row b{font-size:14px;font-weight:650}
+.xh-folder-row small{font-size:12px;color:var(--hint);margin-top:4px}
+.xh-folder-arrow{font-size:24px;color:var(--hint);padding:0 8px}
+.xh-chat-list{display:flex;flex-direction:column}
+.xh-chatrow{display:flex;align-items:center;gap:8px;min-height:72px;padding:8px 0;border-bottom:1px solid var(--sep)}
+.xh-chat-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left;background:transparent;border:0;padding:3px 0;color:var(--fg)}
+.xh-chat-open .xh-peerpic{width:52px;height:52px}
+.xh-chat-open .xh-chattext b{font-size:15px;font-weight:650}
+.xh-chat-open .xh-chattext small{font-size:13px;margin-top:5px}
+.xh-chatmeta{min-width:52px;align-items:flex-end;justify-content:center;gap:5px}
+.xh-chatmeta>small{font-size:11px;white-space:nowrap}
+.xh-row-actions{display:flex;gap:2px;opacity:.65}
+.xh-row-actions button{font-size:13px;background:transparent;padding:3px 5px}
+.xh-chathead{height:60px;flex:none;background:var(--bar);padding:0 10px}
+.xh-chathead>button:first-child{font-size:29px;width:35px}
+.xh-chathead .xh-peerpic{width:42px;height:42px}
+.xh-chat-peer-name{min-width:0;flex:1}
+.xh-chat-peer-name b,.xh-chat-peer-name small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xh-chat-peer-name b{font-size:15px}
+.xh-chat-peer-name small{font-size:11px;margin-top:3px}
+.xh-messages{background-color:var(--page);background-image:radial-gradient(color-mix(in srgb,var(--hint) 8%,transparent) .7px,transparent .7px);background-size:18px 18px}
+.xh-bubble{box-shadow:0 1px 1px #0000000c}
+.xh-bubble.mine{background:#d9fdd3;color:#173b2b}
+.xh-compose{align-items:center;padding:8px 10px calc(8px + var(--safe-bottom));gap:8px}
+.xh-compose input{height:44px;border-radius:24px;background:var(--page);padding:0 16px}
+.xh-compose button{height:42px;min-width:42px;border-radius:50%;display:grid;place-items:center;font-size:19px;padding:0}
+.xh-compose .xh-compose-plus{background:transparent;color:var(--hint);font-size:27px}
+.xh-chatview{height:calc(100dvh - 66px - var(--safe-bottom));}
+@media(min-width:700px){.xh-main{max-width:680px}.xh-chatview{border-left:1px solid var(--sep);border-right:1px solid var(--sep)}}
+@media(max-width:380px){.xh-main{padding:16px 12px}.xh-chat-open .xh-peerpic{width:46px;height:46px}.xh-row-actions button{padding:2px}.xh-chatmeta{min-width:43px}}
