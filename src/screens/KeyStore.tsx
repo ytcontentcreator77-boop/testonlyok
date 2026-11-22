@@ -3,7 +3,7 @@ import { api } from "../api";
 import { t } from "../i18n";
 import { navigate, useRoute } from "../router";
 import { Screen, BackNav, LargeTitle, Section, toast, errText } from "../ui";
-import { haptic, openLink, openTelegramLink, webApp } from "../tg";
+import { haptic, openTelegramLink, webApp } from "../tg";
 
 type Product={id:number;name:string;category:string;platform:string;description?:string;image_url?:string;category_image?:string;platform_logo?:string;api_android_required?:number;stock_count:number};
 type Plan={id:number;duration:string;price_inr:number;stock_count:number};
