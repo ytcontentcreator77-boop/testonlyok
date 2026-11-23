@@ -180,3 +180,24 @@
 .xh-note{line-height:1.5;color:#858ca2}
 @media(min-width:700px){.xh-main{max-width:680px;padding-top:24px}.xh-chatview{border-left:1px solid var(--xh-line);border-right:1px solid var(--xh-line);box-shadow:0 0 35px #24345c0b}}
 @media(max-width:380px){.xh-main{padding:15px 12px 24px}.xh-chat-open .xh-peerpic{width:47px;height:47px}.xh-chatmeta{min-width:42px}}
+
+/* Dedicated Settings screen and grouped navigation */
+.xh-settings-account{width:100%;display:flex;align-items:center;gap:14px;padding:16px;margin:4px 0 20px;border:1px solid var(--xh-line);border-radius:19px;background:#fff;color:inherit;text-align:left;box-shadow:0 5px 18px #29366b0b}
+:root[data-theme="dark"] .xh-settings-account,:root[data-theme="dark"] .xh-settings-group{background:#15182a;border-color:#292d43}
+.xh-settings-account .xh-profilepic{width:54px;height:54px;flex:none;margin:0;border:0}
+.xh-settings-account>span{flex:1;min-width:0}.xh-settings-account b,.xh-settings-account small{display:block}
+.xh-settings-account b{font-size:14px;font-weight:800}.xh-settings-account small{font-size:11px;color:#858ca2;margin-top:4px}
+.xh-settings-account>strong{font-size:24px;color:#9299ae;font-weight:400}
+.xh-settings-group{margin:12px 0 16px;padding:3px 13px 7px;border:1px solid var(--xh-line);border-radius:17px;background:#fff}
+.xh-settings-group .xh-sectionlabel{margin:13px 2px 5px}
+.xh-settings-row{width:100%;min-height:64px;display:flex;align-items:center;gap:12px;padding:9px 2px;border:0;border-bottom:1px solid var(--xh-line);background:transparent;color:inherit;text-align:left}
+.xh-settings-row:last-child{border-bottom:0}
+.xh-settings-row>i{width:36px;height:36px;flex:none;display:grid;place-items:center;border-radius:12px;background:#efefff;color:#5545f5;font-size:18px;font-style:normal}
+:root[data-theme="dark"] .xh-settings-row>i{background:#25264b;color:#bcb4ff}
+.xh-settings-row>span{flex:1;min-width:0}.xh-settings-row b,.xh-settings-row small{display:block}
+.xh-settings-row b{font-size:13px;font-weight:750}.xh-settings-row small{margin-top:4px;color:#858ca2;font-size:11px;line-height:1.35}
+.xh-settings-row>strong{color:#9299ae;font-size:19px;font-weight:500}
+.xh-settings-row.static>strong{font-size:11px;font-weight:700;color:#7e86a0}
+.xh-settings-about{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 0 24px;color:#858ca2}
+.xh-settings-about b{font-size:12px;color:#646d88}.xh-settings-about small{font-size:10px}
+:root[data-theme="dark"] .xh-settings-about b{color:#c0c5dc}
