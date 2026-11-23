@@ -85,7 +85,7 @@ export async function validateInitData(
   if (!timingSafeEqual(expected, hash)) return null;
 
   const authDate = Number(params.get("auth_date"));
-  if (!authDate || now - authDate > maxAgeSec) return null;
+  if (!authDate || authDate > now + 30 || now - authDate > maxAgeSec) return null;
   const userJson = params.get("user");
   if (!userJson) return null;
   const user = JSON.parse(userJson) as TgUser;
