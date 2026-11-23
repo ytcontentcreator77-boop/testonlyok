@@ -22,9 +22,11 @@ export async function onSuccessfulPayment(env:Env,from:{id:number;language_code?
  const p=await env.DB.prepare("SELECT * FROM premium_invoices WHERE id=?1").bind(Number(match[1])).first<any>();
  if(!p||p.status!=="pending"||p.user_id!==from.id||sp.currency!=="XTR"||sp.total_amount!==p.stars||now()-p.created_at>=3600){console.error("invalid Premium Stars payment",sp.telegram_payment_charge_id);return;}
  const ts=now();
+ const latest=await env.DB.prepare("SELECT MAX(expires_at) AS latest FROM premium_subscriptions WHERE user_id=?1 AND status='active' AND expires_at>?2").bind(p.user_id,ts).first<{latest:number|null}>();
+ const startsAt=Math.max(ts,Number(latest?.latest||ts));
  const [mark]=await env.DB.batch([
   env.DB.prepare("UPDATE premium_invoices SET status='paid',charge_id=?2,paid_at=?3 WHERE id=?1 AND status='pending'").bind(p.id,sp.telegram_payment_charge_id,ts),
-  env.DB.prepare("INSERT INTO premium_subscriptions(user_id,plan_id,starts_at,expires_at,source) SELECT ?1,?2,?3,?4,'telegram_stars' WHERE changes()=1").bind(p.user_id,p.plan_id,ts,ts+p.duration_days*86400)
+  env.DB.prepare("INSERT INTO premium_subscriptions(user_id,plan_id,starts_at,expires_at,source) SELECT ?1,?2,?3,?4,'telegram_stars' WHERE changes()=1").bind(p.user_id,p.plan_id,startsAt,startsAt+p.duration_days*86400)
  ]);
  if(!mark.meta.changes)return;
  await tg(env.BOT_TOKEN,"sendMessage",{chat_id:p.user_id,text:"⭐ Telegram X Hero Premium activated successfully."}).catch(e=>console.warn("Premium activation notice failed",e));
